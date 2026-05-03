@@ -75,6 +75,11 @@ nav .nav-links a:hover { color:var(--blue); }
   background:radial-gradient(circle, rgba(55,138,221,0.06) 0%, transparent 70%);
   pointer-events:none;
 }
+.hero-bg-img {
+  position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+  width:70%; max-width:700px; opacity:0.06; pointer-events:none;
+  user-select:none;
+}
 .hero-icon {
   width:88px; height:88px; border-radius:22px; margin:0 auto 20px;
   background:var(--blue); display:flex; align-items:center; justify-content:center;
@@ -182,6 +187,10 @@ nav .nav-links a:hover { color:var(--blue); }
   border:1px solid var(--border); color:var(--text-tertiary);
   font-size:12px; z-index:3;
 }
+.workflow-img {
+  max-width:100%; height:auto; border-radius:var(--radius);
+  margin:32px auto 0; display:block; box-shadow:0 2px 12px rgba(0,0,0,0.04);
+}
 
 /* Specs */
 .specs { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; }
@@ -258,6 +267,7 @@ footer a:hover { text-decoration:underline; }
 
 <!-- Hero -->
 <section class="hero">
+  <img src="images/hero-bg.png" alt="" class="hero-bg-img" loading="lazy">
   <div class="container">
     <div class="hero-icon anim-fade anim-fade-1">
       <svg viewBox="0 0 48 48" fill="none">
@@ -377,6 +387,7 @@ footer a:hover { text-decoration:underline; }
         <p>展示分类建议 → 用户确认 → 按规范命名并归入 Documents</p>
       </div>
     </div>
+    <img src="images/workflow.png" alt="归位工作流示意图" class="workflow-img" loading="lazy">
   </div>
 </section>
 
