@@ -4,201 +4,254 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>归位 · 万物归其所 · 智能文件整理</title>
-<meta name="description" content="归位 · 万物归其所。macOS 原生智能文件整理工具：读内容、智能分类、自动重命名、归档。100% 本地运行。">
+<meta name="description" content="macOS 原生智能文件整理工具：读内容、智能分类、自动重命名、归档。100% 本地运行。">
 <style>
 :root {
-  --blue: #378ADD;
-  --blue-dark: #185FA5;
-  --blue-light: #E6F1FB;
-  --bg: #FAFBFD;
-  --card: #FFFFFF;
-  --text: #1D1D1F;
-  --text-secondary: #6E6E73;
-  --border: #E8E8ED;
-  --radius: 16px;
-  --radius-sm: 10px;
+  --blue: #378ADD; --blue-dark: #185FA5; --blue-light: #E6F1FB;
+  --teal: #1D9E75; --teal-light: #E1F5EE;
+  --amber: #BA7517; --amber-light: #FAEEDA;
+  --coral: #D85A30; --coral-light: #FAECE7;
+  --purple: #7F77DD; --purple-light: #EEEDFE;
+  --pink: #D4537E; --pink-light: #FBEAF0;
+  --bg: #FAFBFD; --card: #FFFFFF; --text: #1D1D1F;
+  --text-secondary: #6E6E73; --text-tertiary: #9E9E9E;
+  --border: #E8E8ED; --radius: 16px;
 }
-* { margin: 0; padding: 0; box-sizing: border-box; }
+* { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior: smooth; }
 body {
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
-  background: var(--bg);
-  color: var(--text);
-  line-height: 1.6;
-  -webkit-font-smoothing: antialiased;
-  overflow-x: hidden;
+  background: var(--bg); color: var(--text); line-height: 1.6;
+  -webkit-font-smoothing: antialiased; overflow-x: hidden;
 }
-.container { max-width: 1024px; margin: 0 auto; padding: 0 24px; }
+.container { max-width: 1024px; margin:0 auto; padding:0 24px; }
+
+/* Animations */
+@keyframes fadeUp { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
+@keyframes fadeIn { from{opacity:0} to{opacity:1} }
+@keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.6} }
+@keyframes countUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+@keyframes shimmer { 0%{background-position:-200% 0} 100%{background-position:200% 0} }
+.anim-fade { animation:fadeUp 0.6s ease-out both; }
+.anim-fade-1 { animation-delay:0.1s; }
+.anim-fade-2 { animation-delay:0.2s; }
+.anim-fade-3 { animation-delay:0.3s; }
 
 /* Nav */
 nav {
-  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-  background: rgba(250,251,253,0.85);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-bottom: 1px solid var(--border);
+  position:fixed; top:0; left:0; right:0; z-index:100;
+  background:rgba(250,251,253,0.82); backdrop-filter:blur(24px) saturate(1.2);
+  -webkit-backdrop-filter:blur(24px) saturate(1.2);
+  border-bottom:1px solid var(--border); transition:box-shadow 0.3s;
 }
-nav .container {
-  display: flex; align-items: center; justify-content: space-between;
-  height: 52px;
-}
-nav .logo { font-size: 16px; font-weight: 600; color: var(--text); }
-nav .logo span { color: var(--blue); }
-nav .nav-links { display: flex; gap: 24px; align-items: center; }
-nav .nav-links a {
-  text-decoration: none; font-size: 13px; color: var(--text-secondary);
-  transition: color 0.2s;
-}
-nav .nav-links a:hover { color: var(--blue); }
-.dl-btn {
-  display: inline-block; background: var(--blue); color: white; padding: 6px 16px;
-  border-radius: 20px; font-size: 12px; font-weight: 500; text-decoration: none;
-  transition: all 0.2s;
-}
-.dl-btn:hover { background: var(--blue-dark); transform: translateY(-1px); }
-.dl-btn-sm { padding: 4px 12px; font-size: 11px; }
+nav.scrolled { box-shadow:0 1px 8px rgba(0,0,0,0.04); }
+nav .container { display:flex; align-items:center; justify-content:space-between; height:52px; }
+nav .logo { font-size:15px; font-weight:600; color:var(--text); letter-spacing:-0.01em; }
+nav .logo span { color:var(--blue); }
+nav .nav-links { display:flex; gap:20px; align-items:center; }
+nav .nav-links a { text-decoration:none; font-size:13px; color:var(--text-secondary); transition:color 0.2s; }
+nav .nav-links a:hover { color:var(--blue); }
+
+/* Buttons */
+.btn { display:inline-flex; align-items:center; gap:6px; text-decoration:none;
+  font-weight:500; transition:all 0.25s; cursor:pointer; }
+.btn-primary { background:var(--blue); color:white; padding:10px 28px; border-radius:40px; font-size:15px; }
+.btn-primary:hover { background:var(--blue-dark); transform:translateY(-2px); box-shadow:0 8px 24px rgba(55,138,221,0.3); }
+.btn-outline { background:transparent; color:var(--text); padding:10px 22px; border-radius:40px; font-size:15px; border:1.5px solid var(--border); }
+.btn-outline:hover { border-color:var(--blue); color:var(--blue); }
+.btn-white { background:white; color:var(--blue); padding:12px 32px; border-radius:40px; font-size:16px; font-weight:500; }
+.btn-white:hover { transform:translateY(-2px); box-shadow:0 8px 24px rgba(0,0,0,0.15); }
 
 /* Hero */
 .hero {
-  padding: 140px 0 80px; text-align: center;
-  background: linear-gradient(180deg, var(--blue-light) 0%, var(--bg) 100%);
+  padding:130px 0 60px; text-align:center; position:relative;
+  background:linear-gradient(180deg, #E6F1FB 0%, #F0F6FE 40%, var(--bg) 100%);
+  overflow:hidden;
+}
+.hero::before {
+  content:''; position:absolute; top:-240px; left:50%; transform:translateX(-50%);
+  width:800px; height:800px; border-radius:50%;
+  background:radial-gradient(circle, rgba(55,138,221,0.06) 0%, transparent 70%);
+  pointer-events:none;
 }
 .hero-icon {
-  width: 96px; height: 96px; border-radius: 22px; margin: 0 auto 24px;
-  background: var(--blue); display: flex; align-items: center; justify-content: center;
-  box-shadow: 0 8px 32px rgba(55,138,221,0.25);
+  width:88px; height:88px; border-radius:22px; margin:0 auto 20px;
+  background:var(--blue); display:flex; align-items:center; justify-content:center;
+  box-shadow:0 8px 32px rgba(55,138,221,0.25); position:relative;
+  animation:float 3s ease-in-out infinite;
 }
-.hero-icon svg { width: 52px; height: 52px; }
-.hero h1 { font-size: 56px; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 8px; }
-.hero .subtitle { font-size: 20px; color: var(--text-secondary); margin-bottom: 8px; }
-.hero .tagline { font-size: 15px; color: var(--blue); font-weight: 500; margin-bottom: 40px; }
-.hero .cta-group { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
-.hero .dl-btn-big {
-  display: inline-flex; align-items: center; gap: 8px;
-  background: var(--blue); color: white; padding: 12px 32px;
-  border-radius: 40px; font-size: 16px; font-weight: 500; text-decoration: none;
-  transition: all 0.2s;
+.hero-icon svg { width:48px; height:48px; }
+.hero h1 { font-size:56px; font-weight:700; letter-spacing:-0.03em; margin-bottom:6px; }
+.hero .subtitle { font-size:19px; color:var(--text-secondary); margin-bottom:4px; }
+.hero .tagline { font-size:14px; color:var(--blue); font-weight:500; margin-bottom:32px; }
+.hero .cta-group { display:flex; gap:10px; justify-content:center; flex-wrap:wrap; }
+.hero .badge { font-size:12px; color:var(--text-tertiary); margin-top:14px; gap:16px; display:flex; justify-content:center; flex-wrap:wrap; }
+.hero .badge span { display:flex; align-items:center; gap:4px; }
+
+/* Terminal Card */
+.terminal-wrap { margin:-10px auto 0; max-width:640px; position:relative; z-index:2; }
+.terminal {
+  background:#1D1D1F; border-radius:12px; overflow:hidden;
+  box-shadow:0 16px 48px rgba(0,0,0,0.15), 0 0 0 1px rgba(255,255,255,0.05) inset;
 }
-.hero .dl-btn-big:hover { background: var(--blue-dark); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(55,138,221,0.3); }
-.hero .dl-btn-outline {
-  display: inline-flex; align-items: center; gap: 8px;
-  background: transparent; color: var(--text); padding: 12px 24px;
-  border-radius: 40px; font-size: 16px; font-weight: 500; text-decoration: none;
-  border: 1.5px solid var(--border); transition: all 0.2s;
+.terminal-bar {
+  background:#2C2C2E; padding:10px 14px; display:flex; align-items:center; gap:8px;
+  border-bottom:1px solid #3A3A3C;
 }
-.hero .dl-btn-outline:hover { border-color: var(--blue); color: var(--blue); }
-.hero .badge { font-size: 12px; color: var(--text-secondary); margin-top: 16px; gap: 16px; display: flex; justify-content: center; flex-wrap: wrap; }
-.hero .badge span { display: flex; align-items: center; gap: 4px; }
+.terminal-dot { width:10px; height:10px; border-radius:50%; }
+.terminal-dot:nth-child(1) { background:#FF5F56; }
+.terminal-dot:nth-child(2) { background:#FFBD2E; }
+.terminal-dot:nth-child(3) { background:#27C93F; }
+.terminal-title { color:#8E8E93; font-size:11px; margin-left:8px; flex:1; text-align:center; }
+.terminal-body { padding:16px 20px; font-family:"SF Mono","Menlo",monospace; font-size:13px; line-height:1.7; overflow-x:auto; }
+.terminal .c-blue { color:#64B5F6; }
+.terminal .c-green { color:#81C784; }
+.terminal .c-gray { color:#8E8E93; }
+.terminal .c-white { color:#E0E0E0; }
+.terminal .cursor { animation:pulse 1.2s infinite; }
 
 /* Section */
-.section { padding: 80px 0; }
-.section-header { text-align: center; margin-bottom: 56px; }
-.section-header h2 { font-size: 40px; font-weight: 700; letter-spacing: -0.02em; margin-bottom: 8px; }
-.section-header p { font-size: 17px; color: var(--text-secondary); max-width: 600px; margin: 0 auto; }
+.section { padding:80px 0; }
+.section-header { text-align:center; margin-bottom:48px; }
+.section-header h2 { font-size:40px; font-weight:700; letter-spacing:-0.02em; margin-bottom:8px; }
+.section-header p { font-size:17px; color:var(--text-secondary); max-width:580px; margin:0 auto; }
 
-/* Features Grid */
-.features { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+/* Features */
+.features { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
 .feature-card {
-  background: var(--card); border-radius: var(--radius); padding: 32px 24px;
-  border: 1px solid var(--border); transition: all 0.3s; cursor: default;
+  background:var(--card); border-radius:var(--radius); padding:28px 22px;
+  border:1px solid var(--border); transition:all 0.35s cubic-bezier(0.25,0.1,0.25,1);
+  cursor:default; position:relative; overflow:hidden;
 }
-.feature-card:hover { transform: translateY(-4px); box-shadow: 0 12px 40px rgba(0,0,0,0.06); border-color: var(--blue); }
-.feature-num {
-  font-size: 12px; font-weight: 600; color: var(--blue); letter-spacing: 0.05em;
-  margin-bottom: 12px; display: flex; align-items: center; gap: 6px;
+.feature-card:hover { transform:translateY(-6px); box-shadow:0 16px 48px rgba(0,0,0,0.06); }
+.feature-card::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; opacity:0; transition:opacity 0.3s; }
+.feature-card:hover::before { opacity:1; }
+.feature-card:nth-child(1)::before { background:var(--blue); }
+.feature-card:nth-child(2)::before { background:var(--teal); }
+.feature-card:nth-child(3)::before { background:var(--purple); }
+.feature-card:nth-child(4)::before { background:var(--amber); }
+.feature-card:nth-child(5)::before { background:var(--coral); }
+.feature-card:nth-child(6)::before { background:var(--pink); }
+.feature-num { font-size:11px; font-weight:600; color:var(--text-tertiary); letter-spacing:0.08em; margin-bottom:10px; }
+.feature-card:nth-child(1) .feature-num { color:var(--blue); }
+.feature-card:nth-child(2) .feature-num { color:var(--teal); }
+.feature-card:nth-child(3) .feature-num { color:var(--purple); }
+.feature-card:nth-child(4) .feature-num { color:var(--amber); }
+.feature-card:nth-child(5) .feature-num { color:var(--coral); }
+.feature-card:nth-child(6) .feature-num { color:var(--pink); }
+.feature-icon {
+  width:36px; height:36px; border-radius:10px; display:flex; align-items:center; justify-content:center;
+  margin-bottom:14px; font-size:16px; font-weight:600;
 }
-.feature-num::before { content: ''; width: 4px; height: 4px; border-radius: 50%; background: var(--blue); }
-.feature-card h3 { font-size: 18px; font-weight: 600; margin-bottom: 8px; }
-.feature-card p { font-size: 14px; color: var(--text-secondary); line-height: 1.6; }
-.feature-card .tag {
-  display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 12px;
-  background: var(--blue-light); color: var(--blue); margin-top: 12px; font-weight: 500;
+.feature-card:nth-child(1) .feature-icon { background:var(--blue-light); color:var(--blue); }
+.feature-card:nth-child(2) .feature-icon { background:var(--teal-light); color:var(--teal); }
+.feature-card:nth-child(3) .feature-icon { background:var(--purple-light); color:var(--purple); }
+.feature-card:nth-child(4) .feature-icon { background:var(--amber-light); color:var(--amber); }
+.feature-card:nth-child(5) .feature-icon { background:var(--coral-light); color:var(--coral); }
+.feature-card:nth-child(6) .feature-icon { background:var(--pink-light); color:var(--pink); }
+.feature-card h3 { font-size:17px; font-weight:600; margin-bottom:6px; }
+.feature-card p { font-size:14px; color:var(--text-secondary); line-height:1.55; }
+.feature-card .tag { display:inline-block; font-size:11px; padding:2px 10px; border-radius:12px; margin-top:10px; font-weight:500; }
+.feature-card:nth-child(1) .tag { background:var(--blue-light); color:var(--blue); }
+.feature-card:nth-child(2) .tag { background:var(--teal-light); color:var(--teal); }
+.feature-card:nth-child(3) .tag { background:var(--purple-light); color:var(--purple); }
+.feature-card:nth-child(4) .tag { background:var(--amber-light); color:var(--amber); }
+.feature-card:nth-child(5) .tag { background:var(--coral-light); color:var(--coral); }
+.feature-card:nth-child(6) .tag { background:var(--pink-light); color:var(--pink); }
+
+/* Steps */
+.steps { display:flex; gap:0; align-items:stretch; }
+.step {
+  flex:1; background:var(--card); border:1px solid var(--border);
+  padding:28px 22px; text-align:center; transition:all 0.3s;
+  position:relative;
+}
+.step:first-child { border-radius:var(--radius) 0 0 var(--radius); }
+.step:last-child { border-radius:0 var(--radius) var(--radius) 0; }
+.step:not(:last-child) { border-right:none; }
+.step:hover { border-color:var(--blue); z-index:2; transform:scale(1.02); box-shadow:0 8px 24px rgba(55,138,221,0.1); }
+.step:not(:last-child):hover + .step { border-left-color:var(--blue); }
+.step-num { width:40px; height:40px; border-radius:50%; background:var(--blue-light); display:flex; align-items:center; justify-content:center; margin:0 auto 14px; font-size:16px; font-weight:600; color:var(--blue); }
+.step h4 { font-size:16px; font-weight:600; margin-bottom:4px; }
+.step p { font-size:13px; color:var(--text-secondary); line-height:1.5; }
+.step-arrow { 
+  position:absolute; right:-12px; top:50%; transform:translateY(-50%);
+  width:24px; height:24px; background:var(--card); border-radius:50%;
+  display:flex; align-items:center; justify-content:center;
+  border:1px solid var(--border); color:var(--text-tertiary);
+  font-size:12px; z-index:3;
 }
 
-/* How it works */
-.how-grid { display: flex; flex-direction: column; gap: 12px; }
-.how-step {
-  display: flex; align-items: center; gap: 20px;
-  background: var(--card); border-radius: var(--radius-sm); border: 1px solid var(--border);
-  padding: 20px 24px; transition: all 0.2s;
-}
-.how-step:hover { border-color: var(--blue); }
-.how-step .step-num {
-  width: 36px; height: 36px; border-radius: 50%; background: var(--blue-light);
-  display: flex; align-items: center; justify-content: center;
-  font-size: 14px; font-weight: 600; color: var(--blue); flex-shrink: 0;
-}
-.how-step .step-text { flex: 1; }
-.how-step .step-text h4 { font-size: 15px; font-weight: 600; margin-bottom: 2px; }
-.how-step .step-text p { font-size: 13px; color: var(--text-secondary); }
-.how-step .step-arrow { color: var(--text-secondary); font-size: 18px; flex-shrink: 0; }
-
-/* Tech Specs */
-.specs-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+/* Specs */
+.specs { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; }
 .spec-card {
-  background: var(--card); border-radius: var(--radius-sm); border: 1px solid var(--border);
-  padding: 20px; transition: all 0.2s;
+  background:var(--card); border-radius:10px; border:1px solid var(--border);
+  padding:16px; text-align:center; transition:all 0.25s;
 }
-.spec-card:hover { border-color: var(--blue); }
-.spec-card h4 { font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.05em; }
-.spec-card p { font-size: 14px; }
+.spec-card:hover { border-color:var(--blue); transform:translateY(-2px); }
+.spec-card .icon { font-size:20px; margin-bottom:6px; }
+.spec-card h4 { font-size:11px; font-weight:600; color:var(--text-tertiary); text-transform:uppercase; letter-spacing:0.06em; margin-bottom:2px; }
+.spec-card p { font-size:13px; }
 
-/* CTA Bottom */
-.cta-bottom {
-  background: linear-gradient(135deg, var(--blue) 0%, #1D6FA5 100%);
-  border-radius: var(--radius); padding: 64px; text-align: center; color: white;
-  margin-top: 40px;
+/* Stats bar */
+.stats-bar {
+  display:flex; gap:0; background:var(--card); border-radius:var(--radius);
+  border:1px solid var(--border); overflow:hidden; margin-bottom:60px;
 }
-.cta-bottom h2 { font-size: 36px; font-weight: 700; margin-bottom: 8px; }
-.cta-bottom p { font-size: 16px; opacity: 0.9; margin-bottom: 24px; }
-.cta-bottom .dl-btn-white {
-  display: inline-flex; align-items: center; gap: 8px;
-  background: white; color: var(--blue); padding: 12px 32px;
-  border-radius: 40px; font-size: 16px; font-weight: 500; text-decoration: none;
-  transition: all 0.2s;
+.stat-item { flex:1; text-align:center; padding:28px 16px; border-right:1px solid var(--border); }
+.stat-item:last-child { border-right:none; }
+.stat-item .num { font-size:28px; font-weight:700; color:var(--blue); }
+.stat-item .label { font-size:12px; color:var(--text-tertiary); margin-top:2px; }
+
+/* CTA */
+.cta {
+  background:linear-gradient(135deg, var(--blue) 0%, #1D6FA5 100%);
+  border-radius:var(--radius); padding:60px; text-align:center; color:white; margin:40px auto 0;
 }
-.cta-bottom .dl-btn-white:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.2); }
+.cta h2 { font-size:36px; font-weight:700; margin-bottom:6px; }
+.cta p { font-size:16px; opacity:0.92; margin-bottom:22px; }
 
 /* Footer */
-footer {
-  padding: 24px 0; text-align: center; font-size: 12px; color: var(--text-secondary);
-  border-top: 1px solid var(--border);
-}
+footer { padding:36px 0 24px; text-align:center; font-size:12px; color:var(--text-tertiary); border-top:1px solid var(--border); }
+footer a { color:var(--blue); text-decoration:none; }
+footer a:hover { text-decoration:underline; }
 
-/* Terminal Screenshot */
-.terminal {
-  background: #1D1D1F; border-radius: var(--radius-sm); padding: 20px 24px;
-  font-family: "SF Mono", "Menlo", monospace; font-size: 13px; line-height: 1.8;
-  margin: 40px auto; max-width: 620px; overflow-x: auto;
-}
-.terminal .blue { color: #64B5F6; }
-.terminal .green { color: #81C784; }
-.terminal .gray { color: #9E9E9E; }
-.terminal .white { color: #E0E0E0; }
+/* Intersection Observer fade-ins */
+.reveal { opacity:0; transform:translateY(30px); transition:all 0.7s cubic-bezier(0.25,0.1,0.25,1); }
+.reveal.visible { opacity:1; transform:translateY(0); }
 
 /* Responsive */
-@media (max-width: 768px) {
-  .hero h1 { font-size: 36px; }
-  .hero .subtitle { font-size: 17px; }
-  .section-header h2 { font-size: 28px; }
-  .features { grid-template-columns: 1fr; }
-  .specs-grid { grid-template-columns: 1fr; }
-  .cta-bottom { padding: 40px 24px; }
-  .cta-bottom h2 { font-size: 28px; }
-  nav .nav-links a:not(.dl-btn) { display: none; }
-  .how-step { flex-direction: column; text-align: center; }
+@media (max-width:768px) {
+  .hero h1 { font-size:34px; }
+  .hero .subtitle { font-size:16px; }
+  .section-header h2 { font-size:28px; }
+  .features { grid-template-columns:1fr; }
+  .steps { flex-direction:column; }
+  .step:first-child { border-radius:var(--radius) var(--radius) 0 0; }
+  .step:last-child { border-radius:0 0 var(--radius) var(--radius); }
+  .step:not(:last-child) { border-right:1px solid var(--border); border-bottom:none; }
+  .step-arrow { transform:rotate(90deg); right:50%; top:auto; bottom:-12px; }
+  .specs { grid-template-columns:repeat(2,1fr); }
+  .stats-bar { flex-direction:column; }
+  .stat-item { border-right:none; border-bottom:1px solid var(--border); }
+  .stat-item:last-child { border-bottom:none; }
+  .cta { padding:40px 24px; }
+  .cta h2 { font-size:28px; }
+  nav .nav-links a:not(.btn) { display:none; }
 }
 </style>
 </head>
 <body>
 
-<nav>
+<nav id="navbar">
   <div class="container">
     <div class="logo">归<span>位</span></div>
     <div class="nav-links">
       <a href="#features">功能</a>
       <a href="#how">原理</a>
-      <a href="#specs">技术</a>
-      <a href="https://github.com/liusuning323/guiwei" target="_blank" class="dl-btn dl-btn-sm">GitHub</a>
+      <a href="#specs">规格</a>
+      <a href="https://github.com/liusuning323/guiwei" target="_blank" class="btn btn-primary" style="padding:5px 14px;font-size:12px;">GitHub</a>
     </div>
   </div>
 </nav>
@@ -206,100 +259,124 @@ footer {
 <!-- Hero -->
 <section class="hero">
   <div class="container">
-    <div class="hero-icon">
-      <svg viewBox="0 0 52 52" fill="none">
-        <rect x="8" y="14" width="36" height="28" rx="4" fill="white" opacity="0.9"/>
-        <rect x="14" y="18" width="24" height="20" rx="2" fill="#E6F1FB"/>
-        <rect x="8" y="10" width="10" height="6" rx="2" fill="white" opacity="0.9"/>
-        <path d="M26 22 L26 34 M22 30 L26 34 L30 30" stroke="#378ADD" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-        <rect x="16" y="36" width="20" height="2" rx="1" fill="#378ADD" opacity="0.5"/>
-        <circle cx="26" cy="37" r="2" fill="white"/>
+    <div class="hero-icon anim-fade anim-fade-1">
+      <svg viewBox="0 0 48 48" fill="none">
+        <rect x="7" y="13" width="34" height="26" rx="4" fill="white" opacity="0.92"/>
+        <rect x="13" y="17" width="22" height="18" rx="2" fill="#E6F1FB"/>
+        <rect x="7" y="9" width="10" height="6" rx="2" fill="white" opacity="0.92"/>
+        <path d="M24 20v11M20 27l4 4 4-4" stroke="#378ADD" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        <rect x="15" y="34" width="18" height="2" rx="1" fill="#378ADD" opacity="0.4"/>
+        <circle cx="24" cy="35" r="2" fill="white"/>
       </svg>
     </div>
-    <h1>归位</h1>
-    <p class="subtitle">万物归其所 · 每个文件回到它该在的位置</p>
-    <p class="tagline">macOS 原生 · 智能内容识别 · 100% 本地</p>
-    <div class="cta-group">
-      <a href="https://github.com/liusuning323/guiwei/releases/tag/v4.0" class="dl-btn-big">
-        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 1v10M4 7l4 4 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M1 13v1a2 2 0 002 2h10a2 2 0 002-2v-1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    <h1 class="anim-fade anim-fade-1">归位</h1>
+    <p class="subtitle anim-fade anim-fade-2">万物归其所 · 每个文件回到它该在的位置</p>
+    <p class="tagline anim-fade anim-fade-2">macOS 原生 · 智能内容识别 · 100% 本地</p>
+    <div class="cta-group anim-fade anim-fade-3">
+      <a href="https://github.com/liusuning323/guiwei/releases/tag/v4.0" class="btn btn-primary">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 1v10M4 7l4 4 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M1 13v1a2 2 0 002 2h10a2 2 0 002-2v-1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
         免费下载
       </a>
-      <a href="#features" class="dl-btn-outline">了解功能</a>
+      <a href="#features" class="btn btn-outline">了解功能</a>
     </div>
-    <div class="badge">
-      <span>⬇ 4.6 MB</span>
-      <span>🍎 macOS 12.0+</span>
-      <span>🔒 零联网 · 不耗 token</span>
+    <div class="badge anim-fade anim-fade-3">
+      <span><svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M4 8h8M8 4v8" stroke="#9E9E9E" stroke-width="1.5" stroke-linecap="round"/></svg> 4.6 MB</span>
+      <span><svg width="12" height="12" viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="10" rx="2" stroke="#9E9E9E" stroke-width="1.5"/><path d="M5 3V2a1 1 0 011-1h4a1 1 0 011 1v1" stroke="#9E9E9E" stroke-width="1.5"/></svg> macOS 12.0+</span>
+      <span><svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M8 1L1 4v5c0 4 3 7 7 8 4-1 7-4 7-8V4L8 1z" stroke="#9E9E9E" stroke-width="1.5"/><path d="M6 8l2 2 3-3" stroke="#9E9E9E" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg> 零联网 · 不耗 token</span>
     </div>
   </div>
 </section>
 
-<!-- Terminal Preview -->
-<div class="container">
+<!-- Terminal -->
+<div class="container terminal-wrap reveal">
   <div class="terminal">
-    <pre><span class="gray">$</span> <span class="white">归位</span>
+    <div class="terminal-bar">
+      <div class="terminal-dot"></div>
+      <div class="terminal-dot"></div>
+      <div class="terminal-dot"></div>
+      <div class="terminal-title">归位 — python3</div>
+    </div>
+    <div class="terminal-body">
+<pre><span class="c-gray">$</span> <span class="c-white">归位</span>
 
-<span class="blue">╔═══════════════════════════════════════════════╗</span>
-<span class="blue">║     归位 v4.0 · 万物归其所                  ║</span>
-<span class="blue">║     100% 本地运行 · 无需联网 · 不耗 token   ║</span>
-<span class="blue">╚═══════════════════════════════════════════════╝</span>
+<span class="c-blue">╔═══════════════════════════════════════════════╗</span>
+<span class="c-blue">║     归位 v4.0 · 万物归其所                  ║</span>
+<span class="c-blue">║     100% 本地运行 · 无需联网 · 不耗 token   ║</span>
+<span class="c-blue">╚═══════════════════════════════════════════════╝</span>
 
-  <span class="blue">┌─</span> 归位 · 请选择模式 <span class="blue">──────────────────────┐</span>
-  <span class="blue">│</span>                                          <span class="blue">│</span>
-  <span class="blue">│</span>  [<span class="green">1</span>] 仅重命名 — 原地改名，不改位置        <span class="blue">│</span>
-  <span class="blue">│</span>  [<span class="green">2</span>] 智能归档 — 改名 + 归入 Documents     <span class="blue">│</span>
-  <span class="blue">│</span>  [<span class="green">3</span>] 快速查阅 — 只看内容，不动文件        <span class="blue">│</span>
-  <span class="blue">│</span>  [<span class="green">4</span>] Inbox清空 — 批量清理待处理文件夹     <span class="blue">│</span>
-  <span class="blue">│</span>  [<span class="green">5</span>] 桌面清理 — 批量清理桌面散落文件       <span class="blue">│</span>
-  <span class="blue">│</span>  [<span class="green">6</span>] 批量重命名 — 整个文件夹统一改名       <span class="blue">│</span>
-  <span class="blue">└──────────────────────────────────────────┘</span>
+  <span class="c-blue">┌─</span> 归位 · 请选择模式 <span class="c-blue">──────────────────────┐</span>
+  <span class="c-blue">│</span>                                          <span class="c-blue">│</span>
+  <span class="c-blue">│</span>  [<span class="c-green">1</span>] 仅重命名 — 原地改名，不改位置        <span class="c-blue">│</span>
+  <span class="c-blue">│</span>  [<span class="c-green">2</span>] 智能归档 — 改名 + 归入 Documents     <span class="c-blue">│</span>
+  <span class="c-blue">│</span>  [<span class="c-green">3</span>] 快速查阅 — 只看内容，不动文件        <span class="c-blue">│</span>
+  <span class="c-blue">│</span>  [<span class="c-green">4</span>] Inbox清空 — 批量清理待处理文件夹     <span class="c-blue">│</span>
+  <span class="c-blue">│</span>  [<span class="c-green">5</span>] 桌面清理 — 批量清理桌面散落文件       <span class="c-blue">│</span>
+  <span class="c-blue">│</span>  [<span class="c-green">6</span>] 批量重命名 — 整个文件夹统一改名       <span class="c-blue">│</span>
+  <span class="c-blue">└──────────────────────────────────────────┘</span>
 
-  <span class="gray">请输入模式 (1-6):</span> <span class="white">_</span></pre>
+  <span class="c-gray">请输入模式 (1-6):</span> <span class="cursor c-white">_</span></pre>
+    </div>
+  </div>
+</div>
+
+<!-- Stats -->
+<div class="container reveal">
+  <div class="stats-bar">
+    <div class="stat-item"><div class="num">6</div><div class="label">工作模式</div></div>
+    <div class="stat-item"><div class="num">50+</div><div class="label">学术关键词</div></div>
+    <div class="stat-item"><div class="num">16</div><div class="label">文件分类</div></div>
+    <div class="stat-item"><div class="num">100%</div><div class="label">本地运行</div></div>
   </div>
 </div>
 
 <!-- Features -->
 <section class="section" id="features">
-  <div class="container">
+  <div class="container reveal">
     <div class="section-header">
       <h2>六种模式，覆盖全场景</h2>
       <p>从快速重命名到深度归档，一套工具搞定所有文件整理需求</p>
     </div>
     <div class="features">
       <div class="feature-card">
-        <div class="feature-num">01</div>
+        <div class="feature-icon">R1</div>
+        <div class="feature-num">模式 01</div>
         <h3>仅重命名</h3>
-        <p>按规范自动改文件名，清理 Screenshot、微信图片 等前缀。文件留在原地。</p>
-        <span class="tag">正在处理中的文件</span>
+        <p>按规范改文件名，清理 Screenshot、微信图片等前缀。文件留在原位。</p>
+        <span class="tag">安全试手</span>
       </div>
       <div class="feature-card">
-        <div class="feature-num">02</div>
+        <div class="feature-icon">A2</div>
+        <div class="feature-num">模式 02</div>
         <h3>智能归档</h3>
-        <p>读取文件内容 → 自动判断分类 → 按规范改名 → 归入 Documents 体系。</p>
-        <span class="tag">永久归档</span>
+        <p>读取文件内容 → 自动分类 → 按规范改名 → 归入 Documents 体系。</p>
+        <span class="tag">一键归位</span>
       </div>
       <div class="feature-card">
-        <div class="feature-num">03</div>
+        <div class="feature-icon">Q3</div>
+        <div class="feature-num">模式 03</div>
         <h3>快速查阅</h3>
-        <p>拖入文件即显示内容预览、分类建议、建议文件名。只看不动，确认后再操作。</p>
+        <p>拖入即显内容预览、分类建议、建议文件名。只看不动，确认再操作。</p>
         <span class="tag">内容预览</span>
       </div>
       <div class="feature-card">
-        <div class="feature-num">04</div>
+        <div class="feature-icon">I4</div>
+        <div class="feature-num">模式 04</div>
         <h3>Inbox 清空</h3>
-        <p>自动扫描 00 待处理 inbox 文件夹，逐文件展示分类建议，批量确认归档。</p>
+        <p>自动扫描待处理 inbox，逐文件展示分类建议，批量确认归档。</p>
         <span class="tag">每周维护</span>
       </div>
       <div class="feature-card">
-        <div class="feature-num">05</div>
+        <div class="feature-icon">D5</div>
+        <div class="feature-num">模式 05</div>
         <h3>桌面清理</h3>
-        <p>扫描 Desktop 全部散落文件，统一分类归档到 Documents，桌面焕然一新。</p>
+        <p>扫描 Desktop 全部散落文件，统一分类归档到 Documents。</p>
         <span class="tag">桌面整洁</span>
       </div>
       <div class="feature-card">
-        <div class="feature-num">06</div>
+        <div class="feature-icon">B6</div>
+        <div class="feature-num">模式 06</div>
         <h3>批量重命名</h3>
-        <p>拖入整个文件夹，递归扫描子文件夹，按规范批量统一改文件名。</p>
+        <p>拖入整个文件夹，递归扫描子文件夹，按规范统一改名。</p>
         <span class="tag">批量处理</span>
       </div>
     </div>
@@ -307,79 +384,97 @@ footer {
 </section>
 
 <!-- How it works -->
-<section class="section" id="how" style="background: var(--card);">
-  <div class="container">
+<section class="section" id="how" style="background:var(--card);">
+  <div class="container reveal">
     <div class="section-header">
-      <h2>工作原理</h2>
-      <p>三步完成，全自动本地处理</p>
+      <h2>三步搞定</h2>
+      <p>拖入 → 分析 → 确认，全自动本地处理</p>
     </div>
-    <div class="how-grid">
-      <div class="how-step">
+    <div class="steps">
+      <div class="step">
         <div class="step-num">1</div>
-        <div class="step-text">
-          <h4>拖入文件</h4>
-          <p>拖拽文件/文件夹到 归位.app 图标上，或双击启动后交互选择</p>
-        </div>
+        <h4>拖入文件</h4>
+        <p>拖拽文件到归位.app 图标，或双击启动后交互选择</p>
         <div class="step-arrow">→</div>
       </div>
-      <div class="how-step">
+      <div class="step">
         <div class="step-num">2</div>
-        <div class="step-text">
-          <h4>智能分析</h4>
-          <p>macOS Spotlight 快速提取元数据 → pdfplumber/docx 深入读取内容 → 50+ 关键词图谱评分</p>
-        </div>
+        <h4>智能分析</h4>
+        <p>Spotlight 提取元数据 → pdfplumber 读取正文 → 50+ 关键词评分</p>
         <div class="step-arrow">→</div>
       </div>
-      <div class="how-step">
+      <div class="step">
         <div class="step-num">3</div>
-        <div class="step-text">
-          <h4>确认归档</h4>
-          <p>展示分类建议和新文件名 → 用户确认 → 按规范命名并归入 Documents</p>
-        </div>
+        <h4>确认归档</h4>
+        <p>展示分类建议 → 用户确认 → 按规范命名并归入 Documents</p>
       </div>
     </div>
   </div>
 </section>
 
-<!-- Tech Specs -->
+<!-- Specs -->
 <section class="section" id="specs">
-  <div class="container">
+  <div class="container reveal">
     <div class="section-header">
       <h2>技术规格</h2>
       <p>纯本地运行，无需联网，不耗 token</p>
     </div>
-    <div class="specs-grid">
-      <div class="spec-card"><h4>系统要求</h4><p>macOS 12.0+ · Apple Silicon 或 Intel</p></div>
-      <div class="spec-card"><h4>运行环境</h4><p>Python 3.10+（macOS 预装）</p></div>
-      <div class="spec-card"><h4>内容引擎</h4><p>macOS Spotlight · pdfplumber · python-docx · Pillow</p></div>
-      <div class="spec-card"><h4>关键词库</h4><p>50+ 学术关键词，覆盖 16 种文件分类</p></div>
-      <div class="spec-card"><h4>命名规范</h4><p>6 套规则 · 自动清理杂音前缀 · 重名自动加序号</p></div>
-      <div class="spec-card"><h4>文件体系</h4><p>PARA 分类法 · 8 个顶层目录 · Obsidian 联动</p></div>
-      <div class="spec-card"><h4>安装方式</h4><p>.app 拖入 /Applications · 或源码构建</p></div>
-      <div class="spec-card"><h4>开源协议</h4><p>MIT · GitHub: liusuning323/guiwei</p></div>
+    <div class="specs">
+      <div class="spec-card"><div class="icon">🖥</div><h4>系统</h4><p>macOS 12.0+</p></div>
+      <div class="spec-card"><div class="icon">🐍</div><h4>环境</h4><p>Python 3.10+</p></div>
+      <div class="spec-card"><div class="icon">📖</div><h4>引擎</h4><p>Spotlight + pdfplumber</p></div>
+      <div class="spec-card"><div class="icon">🔑</div><h4>词库</h4><p>50+ 学术关键词</p></div>
+      <div class="spec-card"><div class="icon">🏷️</div><h4>命名</h4><p>6 套规则 · 智能去重</p></div>
+      <div class="spec-card"><div class="icon">📁</div><h4>体系</h4><p>PARA + Obsidian</p></div>
+      <div class="spec-card"><div class="icon">⬇️</div><h4>安装</h4><p>拖入 Applications</p></div>
+      <div class="spec-card"><div class="icon">📜</div><h4>许可</h4><p>MIT 开源</p></div>
     </div>
   </div>
 </section>
 
 <!-- CTA -->
-<div class="container">
-  <div class="cta-bottom">
+<div class="container reveal">
+  <div class="cta">
     <h2>让文件回归秩序</h2>
     <p>免费 · 开源 · 纯本地 · 尊重你的隐私</p>
-    <a href="https://github.com/liusuning323/guiwei/releases/tag/v4.0" class="dl-btn-white">
+    <a href="https://github.com/liusuning323/guiwei/releases/tag/v4.0" class="btn btn-white">
       <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 1v10M4 7l4 4 4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M1 13v1a2 2 0 002 2h10a2 2 0 002-2v-1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
       下载归位 v4.0
     </a>
-    <p style="margin-top:12px; font-size:13px; opacity:0.7;">macOS 12.0+ · 仅 4.6 MB · 立即使用</p>
+    <p style="margin-top:10px;font-size:13px;opacity:0.7;">macOS 12.0+ · 仅 4.6 MB · 即下即用</p>
   </div>
 </div>
 
 <!-- Footer -->
 <footer>
   <div class="container">
-    <p>归位 · 万物归其所 &mdash; MIT License &mdash; <a href="https://github.com/liusuning323/guiwei" style="color:var(--blue);text-decoration:none;">GitHub</a></p>
+    <p>归位 · 万物归其所 &mdash; MIT License &mdash; <a href="https://github.com/liusuning323/guiwei">GitHub</a></p>
   </div>
 </footer>
+
+<!-- Intersection Observer for scroll animations -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  // Navbar shadow on scroll
+  const nav = document.getElementById('navbar');
+  window.addEventListener('scroll', function() {
+    nav.classList.toggle('scrolled', window.scrollY > 20);
+  });
+
+  // Reveal sections on scroll
+  const observer = new IntersectionObserver(function(entries) {
+    entries.forEach(function(entry) {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+      }
+    });
+  }, { threshold: 0.15, rootMargin: '0px 0px -60px 0px' });
+
+  document.querySelectorAll('.reveal').forEach(function(el) {
+    observer.observe(el);
+  });
+});
+</script>
 
 </body>
 </html>
