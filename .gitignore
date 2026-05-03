@@ -1,0 +1,16 @@
+# 构建产物
+build/
+*.app/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# macOS
+.DS_Store
+*.iconset
+
+# IDE
+.vscode/
+.idea/
