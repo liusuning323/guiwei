@@ -121,25 +121,19 @@ nav .nav-links a:hover { color: var(--blue); }
   width: 120px; height: 120px;
   margin: 0 auto 28px;
   border-radius: 27%;
-  background: linear-gradient(135deg, #0071E3 0%, #5856D6 100%);
   display: flex; align-items: center; justify-content: center;
   box-shadow:
     0 8px 32px rgba(0,113,227,0.28),
-    0 2px 8px rgba(0,0,0,0.08),
-    inset 0 1px 0 rgba(255,255,255,0.25);
-  position: relative;
+    0 2px 8px rgba(0,0,0,0.08);
   animation: float 4s ease-in-out infinite, iconPulse 4s ease-in-out infinite;
   overflow: hidden;
+  background: none;
 }
-/* macOS icon 内圈磨砂感 */
-.hero-icon::before {
-  content: ''; position: absolute; inset: 8px;
-  border-radius: 22%;
-  background: rgba(255,255,255,0.13);
-  backdrop-filter: blur(2px);
-  -webkit-backdrop-filter: blur(2px);
+.hero-icon img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  border-radius: 27%;
 }
-.hero-icon svg { position: relative; z-index: 1; }
 .hero h1 {
   font-size: 64px; font-weight: 700;
   letter-spacing: -0.05em; margin-bottom: 8px;
@@ -333,7 +327,7 @@ footer a:hover { text-decoration: underline; }
 @media (max-width: 480px) {
   .hero { padding: 120px 0 60px; }
   .hero-icon { width: 96px; height: 96px; border-radius: 22%; }
-  .hero-icon svg { width: 48px; height: 48px; }
+  .hero-icon img { width: 100%; height: 100%; }
   .hero h1 { font-size: 32px; }
   .stats-bar { grid-template-columns: 1fr 1fr; }
 }
@@ -357,15 +351,7 @@ footer a:hover { text-decoration: underline; }
 <section class="hero">
   <div class="container">
     <div class="hero-icon anim-fade anim-fade-1">
-      <!-- macOS App Icon Style SVG -->
-      <svg width="56" height="56" viewBox="0 0 56 56" fill="none">
-        <!-- 内圈磨砂圆环 -->
-        <circle cx="28" cy="28" r="18" fill="rgba(255,255,255,0.15)" stroke="rgba(255,255,255,0.3)" stroke-width="1"/>
-        <!-- 箭头向下符号 -->
-        <path d="M28 18v16M23 26l5 5 5-5" stroke="white" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-        <!-- 底部文件夹指示线 -->
-        <rect x="18" y="38" width="20" height="3" rx="1.5" fill="rgba(255,255,255,0.35)"/>
-      </svg>
+      <img src="images/icon-512.png" alt="归位">
     </div>
     <h1 class="anim-fade anim-fade-1">归位</h1>
     <p class="subtitle anim-fade anim-fade-2">万物归其所 · 每个文件回到它该在的位置</p>
