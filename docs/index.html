@@ -75,11 +75,6 @@ nav .nav-links a:hover { color:var(--blue); }
   background:radial-gradient(circle, rgba(55,138,221,0.06) 0%, transparent 70%);
   pointer-events:none;
 }
-.hero-bg-img {
-  position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
-  width:70%; max-width:700px; opacity:0.06; pointer-events:none;
-  user-select:none;
-}
 .hero-icon {
   width:88px; height:88px; border-radius:22px; margin:0 auto 20px;
   background:var(--blue); display:flex; align-items:center; justify-content:center;
@@ -93,28 +88,6 @@ nav .nav-links a:hover { color:var(--blue); }
 .hero .cta-group { display:flex; gap:10px; justify-content:center; flex-wrap:wrap; }
 .hero .badge { font-size:12px; color:var(--text-tertiary); margin-top:14px; gap:16px; display:flex; justify-content:center; flex-wrap:wrap; }
 .hero .badge span { display:flex; align-items:center; gap:4px; }
-
-/* Terminal Card */
-.terminal-wrap { margin:-10px auto 0; max-width:640px; position:relative; z-index:2; }
-.terminal {
-  background:#1D1D1F; border-radius:12px; overflow:hidden;
-  box-shadow:0 16px 48px rgba(0,0,0,0.15), 0 0 0 1px rgba(255,255,255,0.05) inset;
-}
-.terminal-bar {
-  background:#2C2C2E; padding:10px 14px; display:flex; align-items:center; gap:8px;
-  border-bottom:1px solid #3A3A3C;
-}
-.terminal-dot { width:10px; height:10px; border-radius:50%; }
-.terminal-dot:nth-child(1) { background:#FF5F56; }
-.terminal-dot:nth-child(2) { background:#FFBD2E; }
-.terminal-dot:nth-child(3) { background:#27C93F; }
-.terminal-title { color:#8E8E93; font-size:11px; margin-left:8px; flex:1; text-align:center; }
-.terminal-body { padding:16px 20px; font-family:"SF Mono","Menlo",monospace; font-size:13px; line-height:1.7; overflow-x:auto; }
-.terminal .c-blue { color:#64B5F6; }
-.terminal .c-green { color:#81C784; }
-.terminal .c-gray { color:#8E8E93; }
-.terminal .c-white { color:#E0E0E0; }
-.terminal .cursor { animation:pulse 1.2s infinite; }
 
 /* Section */
 .section { padding:80px 0; }
@@ -267,7 +240,6 @@ footer a:hover { text-decoration:underline; }
 
 <!-- Hero -->
 <section class="hero">
-  <img src="images/hero-bg.png" alt="" class="hero-bg-img" loading="lazy">
   <div class="container">
     <div class="hero-icon anim-fade anim-fade-1">
       <svg viewBox="0 0 48 48" fill="none">
@@ -387,7 +359,6 @@ footer a:hover { text-decoration:underline; }
         <p>展示分类建议 → 用户确认 → 按规范命名并归入 Documents</p>
       </div>
     </div>
-    <img src="images/workflow.png" alt="归位工作流示意图" class="workflow-img" loading="lazy">
   </div>
 </section>
 
